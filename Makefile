@@ -4,6 +4,7 @@ PREFIX ?= /usr/local
 
 LDFLAGS = -lSDL -lSDL_gfx
 CFLAGS = -O3
+CXXFLAGS = -std=c++14
 
 BUILDDIR := build
 OBJ := $(SRC:%.cpp=$(BUILDDIR)/%.o)
@@ -24,7 +25,7 @@ $(BUILDDIR)/%.o: %.cpp $(BUILDDIRS_T) Makefile
 
 -include $(DEP)
 $(BUILDDIR)/%.d: %.cpp $(BUILDDIRS_T)
-	@$(CPP) $(CPPFLAGS) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
+	@$(CPP) $(CPPFLAGS) $(CXXFLAGS) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
 
 $(BUILDDIRS_T):
