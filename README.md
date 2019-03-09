@@ -1,6 +1,8 @@
 # office-space-tetris
 A version of tetris which don't care which keys you are pressing, but continues solving the puzzle as long as keys are pressed on the keyboard.
 
+**This will only work on UNIX / Linux systems still using an x-server without GUI level security separation of applications.**
+
 It's using the input event devices which all running programs have access to as long as you are running an x.org server (and not wayland etc).
 
 # Usage
