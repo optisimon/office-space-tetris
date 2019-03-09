@@ -29,6 +29,8 @@ std::atomic<int> keyPresses(0);
 std::atomic<bool> quitting(false);
 
 
+#include "Tetris.hpp"
+
 // This would require root priviledges
 void test_opening_event_device()
 {
@@ -216,8 +218,42 @@ void test_launching_xinput_test(int xinputId = 9)
 
 int main(int argc, char* argv[])
 {
-	std::thread t1(test_launching_xinput_test_NEWER, 9);
+	if (argc != 2  || strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)
+	{
+		std::cout
+		<<
+		"Usage: office-space-tetris inputDeviceId\n"
+		"\n"
+		"Will launch a game of Tetris, making seemingly reasonable moves every time ANY key\n"
+		"is pressed, regardless of which window is in focus\n"
+		"\n"
+		"A list of input device ID:s can be obtained by running\n"
+		"  xinput list\n"
+		"\n"
+		"but a better alternative may be to run\n"
+		"  xinput test-xi2\n"
+		"and look for the number in paranthesis after the device entry for each key press.\n"
+		"In my case, I got \"device: 3 (9)\", so 9 would be my inputDeviceId.\n";
+		exit(0);
+	}
+	int inputDeviceId = atoi(argv[1]);
+
+	std::thread t0(tetris);
+	std::thread t1(test_launching_xinput_test_NEWER, inputDeviceId);
+
+	t0.join();
+	quitting = true;
 	t1.join();
+
+
+
+//	std::thread t1(test_launching_xinput_test, 9);
+//	t1.join();
+//	tetris();
+
+//	t1.join();
+//	t0.join();
+
 //	test_launching_xinput_test();
 //	test_opening_event_device();
 }
