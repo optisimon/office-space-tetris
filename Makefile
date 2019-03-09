@@ -2,8 +2,8 @@ BIN := office-space-tetris
 SRC := $(wildcard src/*.cpp)
 PREFIX ?= /usr/local
 
-LDFLAGS = -lSDL -lSDL_gfx
-CFLAGS = -O3
+LDFLAGS = -lSDL -lSDL_gfx -lpthread
+CFLAGS = -O0 -ggdb
 CXXFLAGS = -std=c++14
 
 BUILDDIR := build
