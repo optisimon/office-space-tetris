@@ -1,0 +1,81 @@
+BIN := office-space-tetris-test
+SRC := $(wildcard src/tests/*.cpp) src/sdl-related.cpp src/GridWithOffset.cpp src/Pieces.cpp src/Tetris.cpp
+PREFIX ?= /usr/local
+
+LDFLAGS = -lSDL -lSDL_gfx -lpthread
+CPPFLAGS += -isystem $(GTEST_DIR)/include
+CFLAGS = -O0 -ggdb
+CXXFLAGS = -std=c++14 -g -Wall -Wextra -pthread
+
+BUILDDIR := build/test
+OBJ := $(SRC:%.cpp=$(BUILDDIR)/%.o)
+DEP := $(OBJ:.o=.d)
+BUILDDIRS := $(sort $(dir $(OBJ) $(BUILDDIR)/$(BIN)))
+BUILDDIRS_T := $(addsuffix .touched,$(BUILDDIRS))
+
+all: $(BIN)
+
+.PHONY: test
+test: $(BIN)
+	./$(BIN)
+
+GTEST_DIR = /usr/src/gtest
+GTEST_HEADERS = /usr/include/gtest/*.h \
+                /usr/include/gtest/internal/*.h
+
+
+GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS)
+
+GTEST_BUILDDIR_ = build/gtest
+GTEST_BUILDDIRS_T_ = $(GTEST_BUILDDIR_)/.touched
+
+$(GTEST_BUILDDIR_)/gtest-all.o : $(GTEST_SRCS_) $(GTEST_BUILDDIRS_T_)
+	$(CXX) $(TEST_CPPFLAGS) -I$(GTEST_DIR) $(TEST_CXXFLAGS) -c \
+            $(GTEST_DIR)/src/gtest-all.cc -o $@
+
+$(GTEST_BUILDDIR_)/gtest_main.o : $(GTEST_SRCS_) $(GTEST_BUILDDIRS_T_)
+	$(CXX) $(TEST_CPPFLAGS) -I$(GTEST_DIR) $(TEST_CXXFLAGS) -c \
+            $(GTEST_DIR)/src/gtest_main.cc -o $@
+
+$(GTEST_BUILDDIR_)/gtest.a : $(GTEST_BUILDDIR_)/gtest-all.o $(GTEST_BUILDDIRS_T_)
+	$(AR) $(ARFLAGS) $@ $^
+
+$(GTEST_BUILDDIR_)/gtest_main.a: $(GTEST_BUILDDIR_)/gtest-all.o $(GTEST_BUILDDIR_)/gtest_main.o $(GTEST_BUILDDIRS_T_)
+	$(AR) $(ARFLAGS) $@ $^
+	
+$(GTEST_BUILDDIRS_T_):
+	mkdir -p $(dir $@)
+	touch  $@
+
+
+
+$(BIN): $(BUILDDIR)/$(BIN)
+	ln -fs $(BUILDDIR)/$(BIN) $(BIN)
+
+$(BUILDDIR)/$(BIN): $(OBJ) $(GTEST_BUILDDIR_)/gtest_main.a
+	$(CXX) -o $@ $^ $(LDFLAGS)
+
+$(BUILDDIR)/%.o: %.cpp $(BUILDDIRS_T) Makefile
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(CFLAGS) -c -o $@ $<
+
+-include $(DEP)
+$(BUILDDIR)/%.d: %.cpp $(BUILDDIRS_T)
+	@$(CPP) $(CPPFLAGS) $(CXXFLAGS) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
+
+
+$(BUILDDIRS_T):
+	@mkdir -p $(dir $@)
+	@touch  $@
+
+# Without this, gnu make will assume .touched files are intermediary
+# files and they would have been removed by gnu make on exit.
+#.PRECIOUS: $(BUILDDIR)/%.touched
+
+.PHONY: cppcheck
+cppcheck:
+	cppcheck --enable=all --std=c++11 --library=std.cfg --verbose \
+		 --inline-suppr $(SRC)
+
+.PHONY: clean
+clean:
+	rm -rf build $(BUILDDIR) $(GTEST_BUILDDIR_) $(BIN)

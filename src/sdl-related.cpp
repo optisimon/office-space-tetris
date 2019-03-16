@@ -76,45 +76,6 @@ void DrawPixel(SDL_Surface *screen, int x, int y,
 	}
 }
 
-
-
-SDL_Joystick * setup_joystick(){
-	SDL_Joystick * joy = 0;
-
-	int n = SDL_NumJoysticks();
-	if(n<=0){
-		return 0;
-	}else{
-		int choice=0;
-		if(n==1){
-			std::cout << "Using the only available joystick \""
-			<< SDL_JoystickName(0) << "\"\n";
-		}
-		else
-		{
-			do{
-				std::cout << "Select joystick device:\n";
-				for(int i=0; i<n; i++){
-					std::cout << "  " << i << SDL_JoystickName(i);
-				}
-				std::cout << "\n:";
-			}while( (std::cin >> choice) && (choice<0 || choice>=n) );
-		}
-		joy = SDL_JoystickOpen(choice);
-
-		std::cout << "Number of general axis controls: " << SDL_JoystickNumAxes(joy) << "\n"
-		<< "Number of trackballs on a joystick (Joystick trackballs have only relative motion\n"
-		<< "events associated with them and their state cannot be polled): " 
-		<< SDL_JoystickNumBalls(joy) << "\n" 
-		<< "number of POV hats: " << SDL_JoystickNumHats(joy) <<"\n"
-		<< "number of buttons on a joystick:" << SDL_JoystickNumButtons(joy) << "\n"
-		<< "\n";
-
-	}
-	return joy;
-}
-
-
 SDL_Surface* setup_sdl(int w, int h)
 {
 

@@ -6,7 +6,7 @@ LDFLAGS = -lSDL -lSDL_gfx -lpthread
 CFLAGS = -O0 -ggdb
 CXXFLAGS = -std=c++14
 
-BUILDDIR := build
+BUILDDIR := build/bin
 OBJ := $(SRC:%.cpp=$(BUILDDIR)/%.o)
 DEP := $(OBJ:.o=.d)
 BUILDDIRS := $(sort $(dir $(OBJ)))
@@ -29,13 +29,23 @@ $(BUILDDIR)/%.d: %.cpp $(BUILDDIRS_T)
 
 
 $(BUILDDIRS_T):
-	mkdir -p $(dir $@)
-	touch  $@
+	@mkdir -p $(dir $@)
+	@touch  $@
 
 # Without this, gnu make will assume .touched files are intermediary
 # files and they would have been removed by gnu make on exit.
 #.PRECIOUS: $(BUILDDIR)/%.touched
 
+.PHONY: cppcheck
+cppcheck:
+	cppcheck --enable=all --std=c++11 --library=std.cfg --verbose \
+		 --inline-suppr $(SRC)
+
+.PHONY: test
+test:
+	make -f Makefile_test test
+
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR) $(BIN)
+	make -f Makefile_test clean
